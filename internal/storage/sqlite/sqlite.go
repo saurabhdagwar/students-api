@@ -3,8 +3,8 @@ package sqlite
 import (
 	"database/sql"
 
-	_ "github.com/mattn/go-sqlite3"
 	"github.com/saurabhdagwar/students-api/internal/config"
+	_ "modernc.org/sqlite"
 )
 
 type Sqlite struct {
@@ -12,15 +12,15 @@ type Sqlite struct {
 }
 
 func New(cfg *config.Config) (*Sqlite, error) {
-	db, err := sql.Open("sqllite3", cfg.StoragePath)
+	db, err := sql.Open("sqlite", cfg.StoragePath)
 	if err != nil {
 		return nil, err
 	}
 	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS students (
-	id INTEGER PRIMARY KEY AUTOINCREMENT
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	name TEXT,
 	email TEXT,
-	age INTERGER
+	age INTEGER
 	)`)
 	if err != nil {
 		return nil, err
