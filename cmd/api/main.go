@@ -48,12 +48,16 @@ func main() {
 	router.HandleFunc("DELETE /api/students/{id}", student.Delete(storage))
 	router.HandleFunc("GET /api/students/", student.GetList(storage))
 
+	Addr := cfg.Addr
+	if cfg.Env == "PROD" {
+		Addr = "8080"
+	}
 	server := http.Server{
-		Addr:    cfg.Addr,
+		Addr:    Addr,
 		Handler: CORSMiddleware(router),
 	}
-	slog.Info("Server Started", slog.String("address", cfg.Addr))
-	fmt.Printf("Server Started %s", cfg.HTTPServer.Addr)
+	slog.Info("Server Started", slog.String("address", Addr))
+	fmt.Printf("Server Started %s", Addr)
 	done := make(chan os.Signal, 1)
 	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
