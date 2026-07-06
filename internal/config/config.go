@@ -4,6 +4,7 @@ import (
 	"flag"
 	"log"
 	"os"
+	"path/filepath"
 
 	"github.com/ilyakaznacheev/cleanenv"
 )
@@ -27,11 +28,12 @@ func MustLoad() *Config {
 		configFlag := flag.String("config", "", "path to the configuration file")
 		flag.Parse()
 		configPath = *configFlag
-
-		if configPath == "" {
-			log.Fatal("Config path is not set")
-		}
 	}
+
+	if configPath == "" {
+		configPath = filepath.Join("config", "local.yaml")
+	}
+
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
 		log.Fatalf("Config file does not exits %s", configPath)
 	}
