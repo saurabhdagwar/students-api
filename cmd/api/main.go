@@ -16,6 +16,22 @@ import (
 	"github.com/saurabhdagwar/students-api/internal/storage/sqlite"
 )
 
+func CORSMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Credentials", "true")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length")
+		w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE")
+
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
+
 func main() {
 	cfg := config.MustLoad()
 	// database setup
@@ -34,7 +50,7 @@ func main() {
 
 	server := http.Server{
 		Addr:    cfg.Addr,
-		Handler: router,
+		Handler: CORSMiddleware(router),
 	}
 	slog.Info("Server Started", slog.String("address", cfg.Addr))
 	fmt.Printf("Server Started %s", cfg.HTTPServer.Addr)
