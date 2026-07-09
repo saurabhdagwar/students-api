@@ -44,6 +44,10 @@ func New(storage storage.Storage) http.HandlerFunc {
 		)
 
 		if err != nil {
+			if strings.Contains(err.Error(), "already exists") {
+				response.WriteJson(w, http.StatusConflict, response.GeneralErr(err))
+				return
+			}
 			response.WriteJson(w, http.StatusInternalServerError, err)
 			return
 		}
@@ -80,6 +84,10 @@ func Update(storage storage.Storage) http.HandlerFunc {
 
 		err = storage.UpdateStudent(intId, student.Name, student.Email, student.Age)
 		if err != nil {
+			if strings.Contains(err.Error(), "already exists") {
+				response.WriteJson(w, http.StatusConflict, response.GeneralErr(err))
+				return
+			}
 			if strings.Contains(err.Error(), "not found") {
 				response.WriteJson(w, http.StatusNotFound, response.GeneralErr(err))
 				return

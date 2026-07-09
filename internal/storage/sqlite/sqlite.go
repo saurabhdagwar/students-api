@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 
 	"github.com/saurabhdagwar/students-api/internal/config"
@@ -32,7 +33,31 @@ func New(cfg *config.Config) (*Sqlite, error) {
 	}, nil
 }
 
+func (s *Sqlite) emailExists(email string, excludeID int64) error {
+	query := "SELECT id FROM students WHERE email = ?"
+	args := []any{email}
+
+	if excludeID != 0 {
+		query += " AND id != ?"
+		args = append(args, excludeID)
+	}
+
+	var id int64
+	err := s.Db.QueryRow(query, args...).Scan(&id)
+	if err == nil {
+		return fmt.Errorf("email already exists")
+	}
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil
+	}
+	return err
+}
+
 func (s *Sqlite) CreateStudent(name string, email string, age int) (int64, error) {
+	if err := s.emailExists(email, 0); err != nil {
+		return 0, err
+	}
+
 	stmt, err := s.Db.Prepare("INSERT INTO students (name, email, age) VALUES (?, ?, ?)")
 	if err != nil {
 		return 0, err
@@ -52,6 +77,9 @@ func (s *Sqlite) CreateStudent(name string, email string, age int) (int64, error
 }
 
 func (s *Sqlite) UpdateStudent(id int64, name string, email string, age int) error {
+	if err := s.emailExists(email, id); err != nil {
+		return err
+	}
 	stmt, err := s.Db.Prepare("UPDATE students SET name = ?, email = ?, age = ? WHERE id = ?")
 	if err != nil {
 		return err
