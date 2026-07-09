@@ -50,7 +50,7 @@ func main() {
 
 	Addr := cfg.Addr
 	if cfg.Env == "PROD" {
-		Addr = "8080"
+		Addr = ":8080"
 	}
 	server := http.Server{
 		Addr:    Addr,
